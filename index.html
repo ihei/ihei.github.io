@@ -333,86 +333,18 @@
       
         
           
-            <blockquote>
-<p>转载自<a href="https://liam.page/2018/01/18/volatile-in-C-and-Cpp/" target="_blank" rel="noopener">https://liam.page/2018/01/18/volatile-in-C-and-Cpp/</a></p>
-</blockquote>
-<h2 id="约定"><a href="#约定" class="headerlink" title="约定"></a>约定</h2><p>Volatile 这个话题，涉及到计算机科学多个领域多个层次的诸多细节。仅靠一篇博客，很难穷尽这些细节。因此，若不对讨论范围做一些约定，很容易就有诸多漏洞。到时误人子弟，就不好了。以下是一些基本的约定：</p>
-<ul>
-<li>这篇博文讨论的 <code>volatile</code> 关键字，是 C 和 C++ 语言中的关键字。Java 等语言中，也有 <code>volatile</code> 关键字。但它们和 C/C++ 里的 <code>volatile</code> 不完全相同，不在这篇博文的讨论范围内。</li>
-<li>这篇博文讨论的 <code>volatile</code> 关键字，是限定在 C/C++ 标准之下的。这也就是说，我们讨论的内容应该是与平台无关的，同时也是与编译器扩展无关的。</li>
-<li>相应的，这篇文章讨论的「标准」指的是 C/C++ 的标准，而不是其他什么东西。</li>
-<li>我们希望编写的代码是 (1) 符合标准的，(2) 性能良好的，(3) 可移植的。这里 (1) 保证了代码执行结果的正确性，(2) 保证了高效性，(3) 体现了平台无关性（以及编译器扩展等的无关性）。</li>
-</ul>
-<h2 id="含义"><a href="#含义" class="headerlink" title="含义"></a>含义</h2><h3 id="单词-volatile-的含义"><a href="#单词-volatile-的含义" class="headerlink" title="单词 volatile 的含义"></a>单词 volatile 的含义</h3><p>在谈及 C/C++ 中的 <code>volatile</code> 关键字时，总有人会拿 volatile 这个英文单词的中文解释说事。他们把 volatile 翻译作「易变的」。但事实上，对于翻译来说，很多时候目标语言很难找到一个词能够反映源语言中单词的全部含义和细节。此处「易变的」就无法做到这一点。</p>
-<p>Volatile 的意思，若要详细理解，在柯林斯高阶学习词典中，volatile 是这样解释的：</p>
-<blockquote>
-<p>A situation that is volatile is likely to change suddenly and unexpectedly.</p>
-</blockquote>
-<p>这里对 volatile 的解释有三个精髓的形容词和副词，体现了 volatile 的含义。</p>
-<ul>
-<li>likely：可能的。这意味着被 volatile 形容的对象「有可能也有可能不」发生改变，因此我们不能对这样的对象的状态做出任何假设。</li>
-<li>suddenly：突然地。这意味着被 volatile 形容的对象可能发生瞬时改变。</li>
-<li>unexpectedly：不可预期地。这与 likely 相互呼应，意味着被 volatile 形容的对象可能以各种不可预期的方式和时间发生更改。</li>
-</ul>
-<p>因此，volatile 其实就是告诉我们，被它修饰的对象出现任何情况都不要奇怪，我们不能对它们做任何假设。</p>
-<h3 id="程序中-volatile-的含义"><a href="#程序中-volatile-的含义" class="headerlink" title="程序中 volatile 的含义"></a>程序中 volatile 的含义</h3><p>对于程序员来说，程序本身的任何行为都必须是可预期的。那么，在程序当中，什么才叫 volatile 呢？这个问题的答案也很简单：程序可能受到程序之外的因素影响。</p>
-<p>考虑以下 C/C++ 代码。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="keyword">int</span> *p = <span class="comment">/* ... */</span>;</span><br><span class="line"><span class="keyword">int</span> a, b;</span><br><span class="line">a = *p;</span><br><span class="line">b = *p;</span><br></pre></td></tr></table></figure>
-<p>若忽略 <code>volatile</code>，那么 <code>p</code> 就只是一个「指向 <code>int</code> 类型的指针」。这样一来，<code>a = *p;</code> 和 <code>b = *p;</code> 两句，就只需要从内存中读取一次就够了。因为从内存中读取一次之后，CPU 的寄存器中就已经有了这个值；把这个值直接复用就可以了。这样一来，编译器就会做优化，把两次访存的操作优化成一次。这样做是基于一个假设：我们在代码里没有改变 <code>p</code> 指向内存地址的值，那么这个值就一定不会发生改变。</p>
-<blockquote>
-<p>此处说的「读取内存」，包括了读取 CPU 缓存和读取计算机主存。</p>
-</blockquote>
-<p>然而，由于 MMIP（Memory mapped I/O）的存在，这个假设不一定是真的。例如说，假设 <code>p</code> 指向的内存是一个硬件设备。这样一来，从 <code>p</code> 指向的内存读取数据可能伴随着<strong>可观测的副作用</strong>：硬件状态的修改。此时，代码的原意可能是将硬件设备返回的连续两个 <code>int</code> 分别保存在 <code>a</code> 和 <code>b</code> 当中。这种情况下，编译器的优化就会导致程序行为不符合预期了。</p>
-<p>总结来说，被 <code>volatile</code> 修饰的变量，在对其进行读写操作时，会引发一些<strong>可观测的副作用</strong>。而这些可观测的副作用，是由<strong>程序之外的因素决定的</strong>。</p>
-<h3 id="关键字-volatile-的含义"><a href="#关键字-volatile-的含义" class="headerlink" title="关键字 volatile 的含义"></a>关键字 <code>volatile</code> 的含义</h3><p><a href="http://en.cppreference.com/w/Cppreference:FAQ" target="_blank" rel="noopener">CPP reference 网站</a>是对 C 和 C++ 语言标准的整理。因此，绝大多数时候，我们可以通过这个网站对语言标准进行查询。关于 <code>volatile</code> 关键字，有 <a href="http://en.cppreference.com/w/c/language/volatile" target="_blank" rel="noopener">C 语言标准</a>和 <a href="http://en.cppreference.com/w/cpp/language/cv" target="_blank" rel="noopener">C++ 语言标准</a>可查。这里摘录两份标准对 <code>volatile</code> 访问的描述。</p>
-<blockquote>
-<p>C 语言：Every access (both read and write) made through an lvalue expression of volatile-qualified type is considered an observable side effect for the purpose of optimization and is evaluated strictly according to the rules of the abstract machine (that is, all writes are completed at some time before the next sequence point). This means that within a single thread of execution, a volatile access cannot be optimized out or reordered relative to another visible side effect that is separated by a sequence point from the volatile access.<br>C++ 语言：Every access (read or write operation, member function call, etc.) made through a glvalue expression of volatile-qualified type is treated as a visible side-effect for the purposes of optimization (that is, within a single thread of execution, volatile accesses cannot be optimized out or reordered with another visible side effect that is sequenced-before or sequenced-after the volatile access. This makes volatile objects suitable for communication with a signal handler, but not with another thread of execution, see std::memory_order). Any attempt to refer to a volatile object through a non-volatile glvalue (e.g. through a reference or pointer to non-volatile type) results in undefined behavior.</p>
-</blockquote>
-<p>这里首先解释两组概念：值类型和序列点（执行序列）。</p>
-<p>值类型指的是左值（lvalue）右值（rvalue）这些概念。关于左值和右值，<a href="https://liam.page/2016/12/11/rvalue-reference-in-Cpp/" target="_blank" rel="noopener">前作</a>有过介绍。简单的理解，左值可以出现在赋值等号的左边，使用时取的是作为对象的身份；右值不可以出现在赋值等号的左边，使用时取的是对象的值。除了 lvalue 和 rvalue，C++ 还定义了其他的值类型。其中，xvalue 大体可以理解为返回右值引用的函数调用或表达式，而 glvalue 则是 lvalue 和 xvalue 之和。</p>
-<p>序列点则是 C/C++ 中讨论执行顺序时会提到的概念。对于 C/C++ 的表达式来说，执行表达式有两种类型的动作：(1) 计算某个值、(2) 副作用（例如访问 <code>volatile</code> 对象，原子同步，修改文件等）。因此，如果在两个表达式 <code>E1</code> 和 <code>E2</code> 中间有一个序列点，或者在 C++ 中 <code>E1</code> 于序列中在 <code>E2</code> 之前，则 <code>E1</code> 的求值动作和副作用都会在 <code>E2</code> 的求值动作和副作用之前。关于序列点和序列顺序规则，可以参考：<a href="https://en.wikipedia.org/wiki/Sequence_point" target="_blank" rel="noopener">这里</a>和<a href="http://en.cppreference.com/w/cpp/language/eval_order#Rules" target="_blank" rel="noopener">这里</a>。</p>
-<p>因此我们讲，在 C/C++ 中，对 <code>volatile</code> 对象的访问，有编译器优化上的副作用：</p>
-<ul>
-<li>不允许被优化消失（optimized out）；</li>
-<li>于序列上在另一个对 <code>volatile</code> 对象的访问之前。</li>
-</ul>
-<p>这里提及的「不允许被优化」表示对 <code>volatile</code> 变量的访问，编译器不能做任何假设和推理，都必须按部就班地与「内存」进行交互。因此，上述例中「复用寄存器中的值」就是不允许的。</p>
-<p>需要注意的是，无论是 C 还是 C++ 的标准，对于 <code>volatile</code> 访问的序列性，都有单线程执行的前提。其中 C++ 标准特别提及，这个顺序性在多线程环境里不一定成立。</p>
-<h2 id="volatile-与多线程"><a href="#volatile-与多线程" class="headerlink" title="volatile 与多线程"></a><code>volatile</code> 与多线程</h2><p><code>volatile</code> 可以解决多线程中的某些问题，这一错误认识荼毒多年。例如，在<a href="https://web.archive.org/save/https://www.zhihu.com/topic/20034193/hot" target="_blank" rel="noopener">知乎「volatile」话题下的介绍</a>就是「多线程开发中保持可见性的关键字」。为了拨乱反正，这里先给出结论（注意这些结论都基于本文第一节提出的约定之上）：</p>
-<ul>
-<li><code>volatile</code> 不能解决多线程中的问题。</li>
-<li>按照<a href="http://web.archive.org/web/20180120044239/http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2016.html" target="_blank" rel="noopener">Hans Boehm &amp; Nick Maclaren 的总结</a>，<code>volatile</code>只在三种场合下是合适的。<ul>
-<li>和信号处理（signal handler）相关的场合；</li>
-<li>和内存映射硬件（memory mapped hardware）相关的场合；</li>
-<li>和非本地跳转（<code>setjmp</code> 和 <code>longjmp</code>）相关的场合。</li>
-</ul>
-</li>
-</ul>
-<p>以下我们尝试来用 <code>volatile</code> 关键字解决多线程同步的一个基本问题：happens-before。</p>
-<h3 id="naive-case"><a href="#naive-case" class="headerlink" title="naïve case"></a>naïve case</h3><p>首先我们考虑这样一段（伪）代码。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// global shared data</span></span><br><span class="line"><span class="keyword">bool</span> flag = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">thread1() &#123;</span><br><span class="line">    flag = <span class="literal">false</span>;</span><br><span class="line">    Type* value = <span class="keyword">new</span> Type(<span class="comment">/* parameters */</span>);</span><br><span class="line">    thread2(value);</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (flag == <span class="literal">true</span>) &#123;</span><br><span class="line">            apply(value);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    thread2.join();</span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">nullptr</span> != value) &#123; <span class="keyword">delete</span> value; &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">thread2(Type* value) &#123;</span><br><span class="line">    <span class="comment">// do some evaluations</span></span><br><span class="line">    value-&gt;update(<span class="comment">/* parameters */</span>);</span><br><span class="line">    flag = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>c++这段代码将 <code>thread1</code> 作为主线程，等待 <code>thread2</code> 准备好 <code>value</code>。因此，<code>thread2</code> 在更新 <code>value</code> 之后将 <code>flag</code>置为真，而 <code>thread1</code> 死循环地检测 <code>flag</code>。简单来说，这段代码的意图希望实现 <code>thread2</code> 在 <code>thread1</code> 使用 <code>value</code> 之前执行完毕这样的语义。</p>
-<p>对多线程编程稍有了解的人应该知道，这段代码是有问题的。问题主要出在两个方面。其一，在 <code>thread1</code> 中，<code>flag = false</code> 赋值之后，在 <code>while</code> 死循环里，没有任何机会修改 <code>flag</code> 的值，因此在运行之前，编译器优化可能会将 <code>if (flag == true)</code> 的内容全部优化掉。其二，在 <code>thread2</code> 中，尽管逻辑上 <code>update</code> 需要发生在 <code>flag = true</code>之前，但编译器和 CPU 并不知道；因此编译器优化和 CPU 乱序执行可能会使 <code>flag = true</code> 发生在 <code>update</code> 完成之前，因此 <code>thread1</code> 执行 <code>apply(value)</code> 时可能 <code>value</code> 还未准备好。</p>
-<h3 id="加一个-volatile-试试？"><a href="#加一个-volatile-试试？" class="headerlink" title="加一个 volatile 试试？"></a>加一个 <code>volatile</code> 试试？</h3><p>在错误的理解中，此时就到了 <code>volatile</code> 登场的时候了。</p>
-<p>首先我们考虑这样一段（伪）代码。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">// global shared data</span><br><span class="line">volatile bool flag = false;  // 1.</span><br><span class="line"></span><br><span class="line">thread1() &#123;</span><br><span class="line">    flag = false;</span><br><span class="line">    Type* value = new Type(/* parameters */);</span><br><span class="line">    thread2(value);</span><br><span class="line">    while (true) &#123;</span><br><span class="line">        if (flag == true) &#123;  // 2.</span><br><span class="line">            apply(value);</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    thread2.join();</span><br><span class="line">    if (nullptr != value) &#123; delete value; &#125;</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">thread2(Type* value) &#123;</span><br><span class="line">    // do some evaluations</span><br><span class="line">    value-&gt;update(/* parameters */);</span><br><span class="line">    flag = true;</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这里，在 (1) 处，我们将 <code>flag</code> 声明为 <code>volatile</code>-qualified。因此，在 (2) 处，由于 <code>flag == true</code> 是对 <code>volatile</code> 变量的访问，故而 <code>if</code>-block 不会被优化消失。然而，尽管 <code>flag</code> 是 <code>volatile</code>-qualified，但 <code>value</code>并不是。因此，编译器仍有可能在优化时将 <code>thread2</code> 中的 <code>update</code> 和对 <code>flag</code> 的赋值交换顺序。此外，由于 <code>volatile</code> 禁止了编译器对 <code>flag</code> 的优化，这样使用 <code>volatile</code> 不仅无法达成目的，反而会导致性能下降。</p>
-<h3 id="再加一个-volatile-呢？"><a href="#再加一个-volatile-呢？" class="headerlink" title="再加一个 volatile 呢？"></a>再加一个 <code>volatile</code> 呢？</h3><p>在错误的理解中，可能会对 <code>value</code> 也加以 <code>volatile</code> 关键字修饰；颇有些「没有什么是一个 <code>volatile</code> 解决不了的；如果不行，那就两个」的意思。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// global shared data</span></span><br><span class="line"><span class="keyword">volatile</span> <span class="keyword">bool</span> flag = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">thread1() &#123;</span><br><span class="line">    flag = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">volatile</span> Type* value = <span class="keyword">new</span> Type(<span class="comment">/* parameters */</span>);   <span class="comment">// 1.</span></span><br><span class="line">    thread2(value);</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (flag == <span class="literal">true</span>) &#123;</span><br><span class="line">            apply(value);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    thread2.join();</span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">nullptr</span> != value) &#123; <span class="keyword">delete</span> value; &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">thread2(<span class="keyword">volatile</span> Type* value) &#123;</span><br><span class="line">    <span class="comment">// do some evaluations</span></span><br><span class="line">    value-&gt;update(<span class="comment">/* parameters */</span>);                    <span class="comment">// 2.</span></span><br><span class="line">    flag = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在上一节代码的基础上，(1) 将 <code>value</code> 声明为 <code>volatile</code>-qualified。因此 (2) 处对两个 <code>volatile</code>-qualified 变量进行访问时，编译器不会交换他们的顺序。看起来就万事大吉了。</p>
-<p>然而，<code>volatile</code> 只作用在编译器上，但我们的代码最终是要运行在 CPU 上的。尽管编译器不会将 (2) 处换序，但 CPU 的乱序执行（out-of-order execution）已是几十年的老技术了；在 CPU 执行时，<code>value</code> 和 <code>flag</code> 的赋值仍有可能是被换序了的（store-store）。</p>
-<blockquote>
-<p>也许有人会说，x86 和 AMD64 架构的 CPU（大多数个人机器和服务器使用这两种架构的 CPU）只允许 sotre-load 乱序，而不会发生 store-store 乱序；或者在诸如 IA64 架构的处理器上，对 <code>volatile</code>-qualified 变量的访问采用了专门的指令。因而，在这些条件下，这段代码是安全的。尽管如此，使用 <code>volatile</code> 会禁止编译器优化相关变量，从而降低性能，所以也不建议依赖 <code>volatile</code> 在这种情况下做线程同步。另一方面，这严重依赖具体的硬件规范，超出了本文的约定讨论范围。</p>
-</blockquote>
-<h3 id="到底应该怎样做？"><a href="#到底应该怎样做？" class="headerlink" title="到底应该怎样做？"></a>到底应该怎样做？</h3><p>回顾一下，我们最初遇到的问题其实需要解决两件事情。一是 <code>flag</code> 相关的代码块不能被轻易优化消失，二是要保证线程同步的 happens-before 语义。但本质上，设计使用 <code>flag</code> 本身也就是为了构建 happens-before 语义。这也就是说，两个问题，后者才是核心；如有其他不用 <code>flag</code> 的办法解决问题，那么 <code>flag</code> 就不重要。</p>
-<p>对于当前问题，最简单的办法是使用原子操作。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// global shared data</span></span><br><span class="line"><span class="built_in">std</span>::atomic&lt;<span class="keyword">bool</span>&gt; flag = <span class="literal">false</span>;  <span class="comment">// #include &lt;atomic&gt;</span></span><br><span class="line"></span><br><span class="line">thread1() &#123;</span><br><span class="line">    flag = <span class="literal">false</span>;</span><br><span class="line">    Type* value = <span class="keyword">new</span> Type(<span class="comment">/* parameters */</span>);</span><br><span class="line">    thread2(value);</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (flag == <span class="literal">true</span>) &#123;</span><br><span class="line">            apply(value);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    thread2.join();</span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">nullptr</span> != value) &#123; <span class="keyword">delete</span> value; &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">thread2(Type* value) &#123;</span><br><span class="line">    <span class="comment">// do some evaluations</span></span><br><span class="line">    value-&gt;update(<span class="comment">/* parameters */</span>);</span><br><span class="line">    flag = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>由于对 <code>std::atomic&lt;bool&gt;</code> 的操作是原子的，同时构建了良好的内存屏障，因此整个代码的行为在标准下是良定义的。</p>
-<p>除此之外，还可以结合使用互斥量和条件变量。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// global shared data</span></span><br><span class="line"><span class="built_in">std</span>::mutex m;                   <span class="comment">// #include &lt;mutex&gt;</span></span><br><span class="line"><span class="built_in">std</span>::condition_variable cv;     <span class="comment">// #include &lt;condition_variable&gt;</span></span><br><span class="line"><span class="keyword">bool</span> flag = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">thread1() &#123;</span><br><span class="line">    flag = <span class="literal">false</span>;</span><br><span class="line">    Type* value = <span class="keyword">new</span> Type(<span class="comment">/* parameters */</span>);</span><br><span class="line">    thread2(value);</span><br><span class="line">    <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lk(m);</span><br><span class="line">    cv.wait(lk, []()&#123; <span class="keyword">return</span> flag; &#125;);</span><br><span class="line">    apply(value);</span><br><span class="line">    lk.unlock();</span><br><span class="line">    thread2.join();</span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">nullptr</span> != value) &#123; <span class="keyword">delete</span> value; &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">thread2(Type* value) &#123;</span><br><span class="line">    <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lk(m);</span><br><span class="line">    <span class="comment">// do some evaluations</span></span><br><span class="line">    value-&gt;update(<span class="comment">/* parameters */</span>);</span><br><span class="line">    flag = <span class="literal">true</span>;</span><br><span class="line">    cv.notify_one();</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这样一来，由线程之间的同步由互斥量和条件变量来保证，同时也避免了 <code>while (true)</code> 死循环空耗 CPU 的情况。</p>
-
           
+转载自https://liam.page/2018/01/18/volatile-in-C-and-Cpp/
+
+约定Volatile 这个话题，涉及到计算机科学多个领域多个层次的诸多细节。仅靠一篇博客，很难穷尽这些细节。因此，若不对讨论范围做一些约定，很容易就有诸多漏洞。到时误人子弟，就不好了。以
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/04/20/volatile是做什么的/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -540,17 +472,16 @@
       
         
           
-            <p>1 构造一个对象的时候，必须知道对象的实际类型，而虚函数行为是在运行期间确定实际类型的。而在构造一个对象时，由于对象还未构造成功。编译器无法知道对象的实际类型，是该类本身，还是该类的一个派生类，或是更深层次的派生类。无法确定。。。</p>
-<p>2 虚函数的执行依赖于虚函数表。而虚函数表在构造函数中进行初始化工作，即初始化vptr，让他指向正确的虚函数表。而在构造对象期间，虚函数表还没有被初始化，将无法进行。</p>
-<hr>
-<p>更多的情况：</p>
-<p>\1. 从存储空间角度，虚函数对应一个指向vtable虚函数表的指针，这大家都知道，可是这个指向vtable的指针其实是存储在对象的内存空间的。问题出来了，如果构造函数是虚的，就需要通过 vtable来调用，可是对象还没有实例化，也就是内存空间还没有，怎么找vtable呢？所以构造函数不能是虚函数。</p>
-<p>\2. 从使用角度，虚函数主要用于在信息不全的情况下，能使重载的函数得到对应的调用。构造函数本身就是要初始化实例，那使用虚函数也没有实际意义呀。所以构造函数没有必要是虚函数。虚函数的作用在于通过父类的指针或者引用来调用它的时候能够变成调用子类的那个成员函数。而构造函数是在创建对象时自动调用的，不可能通过父类的指针或者引用去调用，因此也就规定构造函数不能是虚函数。</p>
-<p>\3. 构造函数不需要是虚函数，也不允许是虚函数，因为创建一个对象时我们总是要明确指定对象的类型，尽管我们可能通过实验室的基类的指针或引用去访问它但析构却不一定，我们往往通过基类的指针来销毁对象。这时候如果析构函数不是虚函数，就不能正确识别对象类型从而不能正确调用析构函数。</p>
-<p>\4. 从实现上看，vbtl在构造函数调用后才建立，因而构造函数不可能成为虚函数从实际含义上看，在调用构造函数时还不能确定对象的真实类型（因为子类会调父类的构造函数）；而且构造函数的作用是提供初始化，在对象生命期只执行一次，不是对象的动态行为，也没有必要成为虚函数。</p>
-<p>\5. 当一个构造函数被调用时，它做的首要的事情之一是初始化它的VPTR。因此，它只能知道它是“当前”类的，而完全忽视这个对象后面是否还有继承者。当编译器为这个构造函数产生代码时，它是为这个类的构造函数产生代码——既不是为基类，也不是为它的派生类（因为类不知道谁继承它）。所以它使用的VPTR必须是对于这个类的VTABLE。而且，只要它是最后的构造函数调用，那么在这个对象的生命期内，VPTR将保持被初始化为指向这个VTABLE, 但如果接着还有一个更晚派生的构造函数被调用，这个构造函数又将设置VPTR指向它的 VTABLE，等.直到最后的构造函数结束。VPTR的状态是由被最后调用的构造函数确定的。这就是为什么构造函数调用是从基类到更加派生类顺序的另一个理由。但是，当这一系列构造函数调用正发生时，每个构造函数都已经设置VPTR指向它自己的VTABLE。如果函数调用使用虚机制，它将只产生通过它自己的VTABLE的调用，而不是最后的VTABLE（所有构造函数被调用后才会有最后的VTABLE）。</p>
-
-          
+          1 构造一个对象的时候，必须知道对象的实际类型，而虚函数行为是在运行期间确定实际类型的。而在构造一个对象时，由于对象还未构造成功。编译器无法知道对象的实际类型，是该类本身，还是该类的一个派生类，或是更深层次的派生类。无法确定。。。
+2 虚函数的执行依赖于虚函数表。而虚函数表在构造函数中进行初始化工作
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/04/04/为什么没有虚构造函数/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -678,20 +609,17 @@
       
         
           
-            <h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p><img src="https://ws1.sinaimg.cn/large/006tNc79ly1g1xoh231pbj310w08ago4.jpg" alt="image-20190404192534872"></p>
-<h1 id="两个区别"><a href="#两个区别" class="headerlink" title="两个区别"></a>两个区别</h1><ol>
-<li>在未定义显示拷贝构造函数的情况下，系统会调用默认的拷贝函数——即浅拷贝，它能够完成成员的一一复制。当数据成员中没有指针时，浅拷贝是可行的；但当数据成员中有指针时，如果采用简单的浅拷贝，则两类中的两个指针将指向同一个地址，当对象快结束时，会调用两次析构函数，而导致指针悬挂现象，所以，此时，必须采用深拷贝。</li>
-<li>深拷贝与浅拷贝的区别就在于深拷贝会在堆内存中另外申请空间来储存数据，从而也就解决了指针悬挂的问题。简而言之，当数据成员中有指针时，必须要用深拷贝。</li>
-</ol>
-<h1 id="带实例的解释"><a href="#带实例的解释" class="headerlink" title="带实例的解释"></a>带实例的解释</h1><p>c++默认的拷贝构造函数是浅拷贝。<br>浅拷贝就是对象的数据成员之间的简单赋值，如你设计了一个没有类而没有提供它的复制构造函数，当用该类的一个对象去给令一个对象赋值时所执行的过程就是浅拷贝，如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> </span></span><br><span class="line"><span class="class">&#123;</span> </span><br><span class="line">	<span class="keyword">public</span>: </span><br><span class="line">		A(<span class="keyword">int</span> _data) : data(_data)&#123;&#125; </span><br><span class="line">		A()&#123;&#125;</span><br><span class="line">	<span class="keyword">private</span>: </span><br><span class="line">		<span class="keyword">int</span> data;</span><br><span class="line"> &#125;;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">	A a(5), b = a; // 仅仅是数据成员之间的赋值 </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这一句b = a;就是浅拷贝，执行完这句后b.data = 5;<br>如果对象中没有其他的资源（如：堆，文件，系统资源等），则深拷贝和浅拷贝没有什么区别，<br>但当对象中有这些资源时，例子：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> </span></span><br><span class="line"><span class="class">&#123;</span> </span><br><span class="line">	<span class="keyword">public</span>: </span><br><span class="line">		A(<span class="keyword">int</span> _size) : size(_size)</span><br><span class="line">		&#123;</span><br><span class="line">			data = <span class="keyword">new</span> <span class="keyword">int</span>[size];</span><br><span class="line">		&#125; <span class="comment">// 假如其中有一段动态分配的内存 </span></span><br><span class="line">		A()&#123;&#125;;</span><br><span class="line">		 ~A()</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">delete</span> [] data;</span><br><span class="line">		&#125; <span class="comment">// 析构时释放资源</span></span><br><span class="line">	<span class="keyword">private</span>: </span><br><span class="line">		<span class="keyword">int</span>* data;</span><br><span class="line">		<span class="keyword">int</span> size; </span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">	A a(5), b = a; // 注意这一句 </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这里的b = a会造成未定义行为，因为类A中的复制构造函数是编译器生成的，所以b = a执行的是一个浅拷贝过程。浅拷贝是对象数据之间的简单赋值，比如：<br>b.size = a.size;<br>b.data = a.data; // Oops!<br>这里b的指针data和a的指针指向了堆上的同一块内存，a和b析构时，b先把其data指向的动态分配的内存释放了一次，而后a析构时又将这块已经被释放过的内存再释放一次。对同一块动态内存执行2次以上释放的结果是未定义的，所以这将导致内存泄露或程序崩溃。<br>所以这里就需要深拷贝来解决这个问题，深拷贝指的就是当拷贝对象中有对其他资源（如堆、文件、系统等）的引用时（引用可以是指针或引用）时，对象的另开辟一块新的资源，而不再对拷贝对象中有对其他资源的引用的指针或引用进行单纯的赋值。如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> </span></span><br><span class="line"><span class="class">&#123;</span> </span><br><span class="line">	<span class="keyword">public</span>: </span><br><span class="line">		A(<span class="keyword">int</span> _size) : size(_size)</span><br><span class="line">		&#123;</span><br><span class="line">			data = <span class="keyword">new</span> <span class="keyword">int</span>[size];</span><br><span class="line">		&#125; <span class="comment">// 假如其中有一段动态分配的内存 </span></span><br><span class="line">		A()&#123;&#125;;</span><br><span class="line">        	A(<span class="keyword">const</span> A&amp; _A) : size(_A.size)</span><br><span class="line">        	&#123;</span><br><span class="line">			data = <span class="keyword">new</span> <span class="keyword">int</span>[size];</span><br><span class="line">		 &#125; <span class="comment">// 深拷贝 </span></span><br><span class="line">        	~A()</span><br><span class="line">        	&#123;</span><br><span class="line">        		<span class="keyword">delete</span> [] data;</span><br><span class="line">        	&#125; <span class="comment">// 析构时释放资源</span></span><br><span class="line">        <span class="keyword">private</span>: </span><br><span class="line">        	<span class="keyword">int</span>* data; </span><br><span class="line">        	<span class="keyword">int</span> size;</span><br><span class="line"> &#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">	A a(5), b = a; // 这次就没问题了 </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>深拷贝和浅拷贝的区别是在对象状态中包含其它对象的引用的时候，当拷贝一个对象时，如果需要拷贝这个对象引用的对象，则是深拷贝，否则是浅拷贝。</p>
-
-          
+          介绍
+两个区别
+在未定义显示拷贝构造函数的情况下，系统会调用默认的拷贝函数——即浅拷贝，它能够完成成员的一一复制。当数据成员中没有指针时，浅拷贝是可行的；但当数据成员中有指针时，如果采用简单的浅拷贝，则两类中的两个指针将指向同一个地址，当对象快结束时，会调用两次析构函数，而导致指针悬挂现象，所以，此
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/04/04/深拷贝和浅拷贝/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -819,39 +747,23 @@
       
         
           
-            <h2 id="源文件到可执行文件的过程"><a href="#源文件到可执行文件的过程" class="headerlink" title="源文件到可执行文件的过程"></a>源文件到可执行文件的过程</h2><h4 id="一-四个步骤"><a href="#一-四个步骤" class="headerlink" title="一. 四个步骤"></a>一. 四个步骤</h4><ol>
-<li>预处理，.c文件经过预处理器产生.ii文件</li>
-<li>编译，产生汇编文件(.s文件)</li>
-<li>汇编，产生目标文件(.o或.obj或.a文件)</li>
-<li>链接，产生可执行文件(.out或.exe文件)</li>
-</ol>
-<h4 id="二-预处理"><a href="#二-预处理" class="headerlink" title="二. 预处理"></a>二. 预处理</h4><ol>
-<li>对所有的”#define”进行宏展开；</li>
-<li><p>处理所有的条件编译指令，比如”#if”, “#ifdef”, “#elif”, “#endif”</p>
-</li>
-<li><p>处理“#include”指令，这个过程是递归的，也就是说被包含的文件可能还包含其他文件</p>
-</li>
-<li><p><strong>删除所有的注释“//”和“/\</strong>/”**</p>
-</li>
-<li><p>添加行号和文件标识</p>
-</li>
-<li><p>保留所有的“#pragma”编译器指令</p>
-</li>
-</ol>
-<p>   经过预处理后的.ii文件不包含任何宏定义，因为所有的宏已经被展开，并且包含的文件也已经被插入到.ii文件中。</p>
-<h4 id="三-编译"><a href="#三-编译" class="headerlink" title="三. 编译"></a>三. 编译</h4><p>编译的过程就是将预处理完的文件进行一系列词法分析，语法分析，语义分析及优化后生成相应的汇编代码文件(.s文件)</p>
-<p>···</p>
-<p>经过预编译得到的输出文件中，只有常量；如数字、字符串、变量的定义，以及C语言的关键字，如main,if,else,for,while,{,}, +,-,*,/等等。<br>　　编译程序所要作得工作就是通过词法分析和语法分析，在确认所有的指令都符合语法规则之后，将其翻译成等价的中间代码表示或汇编代码。</p>
-<p>　　优化处理是编译系统中一项比较艰深的技术。它涉及到的问题不仅同编译技术本身有关，而且同机器的硬件环境也有很大的关系。优化一部分是对中间代码的优化。这种优化不依赖于具体的计算机。另一种优化则主要针对目标代码的生成而进行的。<br>　　对于前一种优化，主要的工作是删除公共表达式、循环优化（代码外提、强度削弱、变换循环控制条件、已知量的合并等）、复写传播，以及无用赋值的删除，等等。<br>　　后一种类型的优化同机器的硬件结构密切相关，最主要的是考虑是如何充分利用机器的各个硬件寄存器存放的有关变量的值，以减少对于内存的访问次数。另外，如何根据机器硬件执行指令的特点（如流水线、RISC、CISC、VLIW等）而对指令进行一些调整使目标代码比较短，执行的效率比较高，也是一个重要的研究课题。<br>　　经过优化得到的汇编代码必须经过汇编程序的汇编转换成相应的机器指令，方可能被机器执行。</p>
-<h4 id="四-汇编"><a href="#四-汇编" class="headerlink" title="四. 汇编"></a>四. 汇编</h4><p> 汇编器是将汇编代码转变成机器可以执行的代码，每一个汇编语句几乎都对应一条机器指令。最终产生目标文件(.o或.obj文件)。</p>
-<p>···</p>
-<p>　汇编过程实际上指把汇编语言代码翻译成目标机器指令的过程。对于被翻译系统处理的每一个C语言源程序，都将最终经过这一处理而得到相应的目标文件。目标文件中所存放的也就是与源程序等效的目标的机器语言代码。<br>　　目标文件由段组成。通常一个目标文件中至少有两个段：<br>　　代码段：该段中所包含的主要是程序的指令。该段一般是可读和可执行的，但一般却不可写。<br>　　数据段：主要存放程序中要用到的各种全局变量或静态的数据。一般数据段都是可读，可写，可执行的。</p>
-<p>　　Win32平台上一般生成.obj文件，其拥有PE（Portable Executable，即Windows可执行文件）文件格式，包含的是二进制代码，但是不一定能执行。当编译器将一个工程里的所有.cpp文件以分离的方式编译完毕后，再由链接器进行链接成为一个.exe或.dll文件。</p>
-<h4 id="五-链接"><a href="#五-链接" class="headerlink" title="五. 链接"></a>五. 链接</h4><p>链接的过程主要包括了地址和空间分配(Address and Storage Allocation)、符号决议(Symbol Resolution)和重定位(Relocation)</p>
-<p>···</p>
-<p>　　由汇编程序生成的目标文件并不能立即就被执行，其中可能还有许多没有解决的问题。<br>　　例如，某个源文件中的函数可能引用了另一个源文件中定义的某个符号（如变量或者函数调用等）；在程序中可能调用了某个库文件中的函数，等等。所有的这些问题，都需要经链接程序的处理方能得以解决。<br>　　链接程序的主要工作就是将有关的目标文件彼此相连接，也即将在一个文件中引用的符号同该符号在另外一个文件中的定义连接起来，使得所有的这些目标文件成为一个能够诶操作系统装入执行的统一整体。<br>　　根据开发人员指定的同库函数的链接方式的不同，链接处理可分为两种：<br>　　（1）静态链接<br>　　在这种链接方式下，函数的代码将从其所在地静态链接库中被拷贝到最终的可执行程序中。这样该程序在被执行时这些代码将被装入到该进程的虚拟地址空间中。静态链接库实际上是一个目标文件的集合，其中的每个文件含有库中的一个或者一组相关函数的代码。<br>　　（2）动态链接<br>　　在此种方式下，函数的代码被放到称作是动态链接库或共享对象的某个目标文件中。链接程序此时所作的只是在最终的可执行程序中记录下共享对象的名字以及其它少量的登记信息。在此可执行文件被执行时，动态链接库的全部内容将被映射到运行时相应进程的虚地址空间。动态链接程序将根据可执行程序中记录的信息找到相应的函数代码。<br>　　对于可执行文件中的函数调用，可分别采用动态链接或静态链接的方法。使用动态链接能够使最终的可执行文件比较短小，并且当共享对象被多个进程使用时能节约一些内存，因为在内存中只需要保存一份此共享对象的代码。但并不是使用动态链接就一定比使用静态链接要优越。在某些情况下动态链接可能带来一些性能上损害。</p>
+          源文件到可执行文件的过程一. 四个步骤
+预处理，.c文件经过预处理器产生.ii文件
+编译，产生汇编文件(.s文件)
+汇编，产生目标文件(.o或.obj或.a文件)
+链接，产生可执行文件(.out或.exe文件)
 
-          
+二. 预处理
+对所有的”#define”进行宏展开；
+处理所有的条件编译指令，比如”#
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/03/26/源文件到可执行文件的过程/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -979,36 +891,17 @@
       
         
           
-            <h2 id="1-reference和pointer的区别"><a href="#1-reference和pointer的区别" class="headerlink" title="1. reference和pointer的区别"></a>1. reference和pointer的区别</h2><p>在C++ 中，reference在很多方面与指针(pointer)具有同样的能力。</p>
-<h4 id="More-Effective-C-一书的总结："><a href="#More-Effective-C-一书的总结：" class="headerlink" title="More Effective C++ 一书的总结："></a>More Effective C++ 一书的总结：</h4><p>它们两者之间的最大区别是引用必须指向某个对象而 指针可以是<code>NULL</code>，此外引用一旦指定不能更改而指针可以。</p>
-<p>这两个区别点导致引用有更加安全和高效的特性，但是指针却有无可比拟的灵活性。大部分人出于安全性的考虑会推荐使用引用，这其实也是它设计的主要目的，但是如果你想要灵活的设计，大部分时候你只能选用指针，比如设计模式种的大部分设计都是使用指针而不是使 用引用。引用在参数传递的时候用得多一些，而类内部的组合中可能会使用指针来提高设计 的灵活性（毕竟一旦设定就无法改变对于灵活性来说是个灾难）。</p>
-<h4 id="异常安全"><a href="#异常安全" class="headerlink" title="异常安全"></a>异常安全</h4><p>指针还存在的另一个优势是可以使用它实现 <code>pimpl</code>，这种手法可以达到很好的异常安全 性。引用在交换的时候实际上交换的是引用的内容，所以无法做到这一点。详见《More Exceptional C++》一书的第22条。</p>
-<h4 id="网上观点的总结"><a href="#网上观点的总结" class="headerlink" title="网上观点的总结"></a>网上观点的总结</h4><ol>
-<li><p>尽量避免使用指针，可以用引用的时候尽量不要使用指针。</p>
-</li>
-<li><p>指针参数可以在调用的时候传递 <code>NULL</code> 而引用则不可以。所以如果你的参数是可选的话 选择传递指针。</p>
-</li>
-<li><p>指针参数在调用的时候会比引用要明显一些：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fun</span><span class="params">(val)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fuc</span><span class="params">(&amp;val)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>前者比较难以看出是传递引用还是直接传递值，而第二个很明显是传递指针。</p>
-</li>
-<li><p>如果你需要在函数中重新绑定改变参数，你只能用指针。因为你没有办法重新绑定一个引用。不过需要这么做的情况好像比较少。</p>
-</li>
-<li><p>如果你的参数需要传递数组的话，你只能使用指针。</p>
-</li>
-<li><p>其他情况下尽可能的使用引用。因为引用从语义上来说更直白一些，也更不容易出错。 引用一定是指向一个合法的对象，而指针需要在使用之前检查是否为 <code>NULL</code></p>
-</li>
-<li><p>还有一些人觉得参数的传递如果是传递引用的话只使用 <code>const refercence</code>，把引用的作用限制在避免参数拷贝的开销上。然后把改变变量内容的任务交给指针。这也是一个非常不错的建议。</p>
-</li>
-</ol>
-<h4 id="pointer必须使用一个星号操作符-来去掉reference"><a href="#pointer必须使用一个星号操作符-来去掉reference" class="headerlink" title="pointer必须使用一个星号操作符 * 来去掉reference"></a>pointer必须使用一个星号操作符 * 来去掉reference</h4><p>在定义operator++()时，如果使用pointer，定义为<figure class="highlight plain"><figcaption><span>*operator++(day *d)```，则调用的时候必须使用```++&x```来调用，这看起来很奇怪。所以在写operator++的时候，唯一的办法就是passing by reference。</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">#### References vs. const pointers</span><br><span class="line"></span><br><span class="line">C++ 中不允许定义”const reference”， 因为一个reference天生就是const。也就是说，一旦将一个reference绑定到一个对象，就无法再将它重新绑定到另一个不同的对象。在声明一个reference之后没有写法可以将它重新绑定到另外一个对象。</span><br><span class="line"></span><br><span class="line">一个常量指针的声明也同样必须带有一个初始化赋值，不能够对reference二次绑定作为reference与pointer的不同。并不比常量指针和非常量指针的不同更为显著。</span><br><span class="line"></span><br><span class="line">#### Null references</span><br><span class="line"></span><br><span class="line">一个有效的reference必须指向一个对象；而一个指针不需要。一个指针，即使是一个常量指针， 都可以有空值。 一个空指针不指向任何东西。</span><br><span class="line"></span><br><span class="line">这点不同就暗示当你想要确信一个参数必须指向一个对象的时候，应该使用reference作为参数类型。 例如，交换函数(swap function)。</span><br><span class="line"></span><br><span class="line">#### 更安全？</span><br><span class="line"></span><br><span class="line">有些人认为既然reference不能够为空，那么它应该比指针更安全。 我认为reference可能要安全一点，但不会安全很多。虽然一个有效的reference不能为空，但是无效的可以呀。实际上，在很多情况下程序有可能产生无效的reference，而不只是空的reference，例如，你可以定义一个reference，使它绑定到一个指针指向的对象，如下所示：</span><br><span class="line"></span><br><span class="line">```c++</span><br><span class="line">int *p;</span><br><span class="line">…</span><br><span class="line">int &amp;r = *p;</span><br></pre></td></tr></table></figure></p>
-<p>如果指针*p在reference定义时刚好为空，则这个reference为空。 从技术上来说，这个错误并不在于将reference绑定到一个空值，而是在于对一个空指针去参考。 对一个空指针去参考产生了一个不确定的操作，也就意味着很多事都可能发生，而且大部分都不是什么好事。很有可能当程序将reference r 绑定到*p (p所指向的对象)的时候，p实际上没有被去参考，甚至程序只是将p的值拷贝给实现r的指针。而程序将会继续执行下去直到错误在后面的运行中更为明显的表 现出来，产生不可预知的危害。</p>
-<p>下面的函数展示了另外一种产生无效reference的方法：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> &amp;<span class="title">f</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i;</span><br><span class="line">	…</span><br><span class="line">	<span class="keyword">return</span> i;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这个函数返回一个指向本地变量 i 的reference。然而当函数返回时，本地变量 i 的存储空间也就消失了。因此这个函数实际返回了一个指向被回收了的空间的reference。这个操作与返回一个指向本地变量的指针的后果相同。有些编译 器可以在编译时发现这个错误，但也很有可能不会发现。</p>
-<p>我喜欢reference，也有很好的理由使用它们代替pointer。但如果你期望使用reference来使你的程序健壮性显著增强，那么你多半会失望的。</p>
-
-          
+          1. reference和pointer的区别在C++ 中，reference在很多方面与指针(pointer)具有同样的能力。
+More Effective C++ 一书的总结：它们两者之间的最大区别是引用必须指向某个对象而 指针可以是NULL，此外引用一旦指定不能更改而指针可以。
+这两个区别点导
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/03/23/reference和pointer的区别/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
