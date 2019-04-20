@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Consolas, 'Kaiti SC Bold', STKaiti:300,300italic,400,400italic,700,700italic|Consolas:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="面试,c&cpp,多线程,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="参考https://zh.cppreference.com/w/cpp/thread  C++线程支持库包含线程、互斥、条件变量和期货的内建支持。 类：thread管理分离的线程 1234567891011121314151617181920212223242526class thread &amp;#123; public:    // 类型：    class id;    typedef /*im">
+<meta name="keywords" content="面试,c&amp;cpp,多线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="01线程thread">
+<meta property="og:url" content="i2357.xyz/2019/04/20/01线程thread/index.html">
+<meta property="og:site_name" content="ihei">
+<meta property="og:description" content="参考https://zh.cppreference.com/w/cpp/thread  C++线程支持库包含线程、互斥、条件变量和期货的内建支持。 类：thread管理分离的线程 1234567891011121314151617181920212223242526class thread &amp;#123; public:    // 类型：    class id;    typedef /*im">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-04-20T17:33:30.855Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="01线程thread">
+<meta name="twitter:description" content="参考https://zh.cppreference.com/w/cpp/thread  C++线程支持库包含线程、互斥、条件变量和期货的内建支持。 类：thread管理分离的线程 1234567891011121314151617181920212223242526class thread &amp;#123; public:    // 类型：    class id;    typedef /*im">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"right","sidebar_width":350,"display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="i2357.xyz/2019/04/20/01线程thread/">
+
+
+
+
+
+  <title>01线程thread | ihei</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?f40d1c4fb1ed1e32afabecc7fe286250";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ihei</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">ihei-blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="i2357.xyz/2019/04/20/01线程thread/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ihei">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ihei">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">01线程thread</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-20T19:36:39+08:00">
+                2019-04-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/04/20/01线程thread/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2019/04/20/01线程thread/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>参考<a href="https://zh.cppreference.com/w/cpp/thread" target="_blank" rel="noopener">https://zh.cppreference.com/w/cpp/thread</a></p>
+</blockquote>
+<p>C++线程支持库包含线程、互斥、条件变量和期货的内建支持。</p>
+<h1 id="类：thread"><a href="#类：thread" class="headerlink" title="类：thread"></a>类：thread</h1><p>管理分离的线程</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">thread</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// 类型：</span></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">id</span>;</span></span><br><span class="line">    <span class="keyword">typedef</span> <span class="comment">/*implementation-defined*/</span> native_handle_type;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 构造/复制/销毁：</span></span><br><span class="line">    thread() <span class="keyword">noexcept</span>;</span><br><span class="line">    <span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">F</span>, <span class="title">class</span> ...<span class="title">Args</span>&gt; <span class="title">explicit</span> <span class="title">thread</span>(<span class="title">F</span>&amp;&amp; <span class="title">f</span>, <span class="title">Args</span>&amp;&amp;... <span class="title">args</span>);</span></span><br><span class="line">    ~thread();</span><br><span class="line">    thread(<span class="keyword">const</span> thread&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">    thread(thread&amp;&amp;) <span class="keyword">noexcept</span>;</span><br><span class="line">    thread&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> thread&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">    thread&amp; <span class="keyword">operator</span>=(thread&amp;&amp;) <span class="keyword">noexcept</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 成员：</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">(thread&amp;)</span> <span class="keyword">noexcept</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">joinable</span><span class="params">()</span> <span class="keyword">const</span> <span class="keyword">noexcept</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">join</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">detach</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">id <span class="title">get_id</span><span class="params">()</span> <span class="keyword">const</span> <span class="keyword">noexcept</span></span>;</span><br><span class="line">    <span class="function">native_handle_type <span class="title">native_handle</span><span class="params">()</span></span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 静态成员：</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">unsigned</span> <span class="title">hardware_concurrency</span><span class="params">()</span> <span class="keyword">noexcept</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h1 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h1><h3 id="成员函数"><a href="#成员函数" class="headerlink" title="成员函数"></a>成员函数</h3><h4 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h4><p>构造新的 <code>thread</code> 对象。</p>
+<ol>
+<li><p>构造不表示线程的新 <code>thread</code> 对象。</p>
+</li>
+<li><p>移动构造函数。构造表示曾为 <code>other</code> 所表示的执行线程的 <code>thread</code> 对象。此调用后 <code>other</code> 不再表示执行线程。</p>
+</li>
+<li><p>构造新的 <code>std::thread</code> 对象并将它与执行线程关联。新的执行线程开始执行</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::invoke(decay_copy(<span class="built_in">std</span>::forward&lt;Function&gt;(f)), </span><br><span class="line">            decay_copy(<span class="built_in">std</span>::forward&lt;Args&gt;(args))...);</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><strong>示例</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;utility&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f1</span><span class="params">(<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; ++i) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Thread 1 executing\n"</span>;</span><br><span class="line">        ++n;</span><br><span class="line">        <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::milliseconds(<span class="number">10</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f2</span><span class="params">(<span class="keyword">int</span>&amp; n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; ++i) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Thread 2 executing\n"</span>;</span><br><span class="line">        ++n;</span><br><span class="line">        <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::milliseconds(<span class="number">10</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">std</span>::thread t1; <span class="comment">// t1 非线程</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t2</span><span class="params">(f1, n + <span class="number">1</span>)</span></span>; <span class="comment">// 按值传递</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t3</span><span class="params">(f2, <span class="built_in">std</span>::ref(n))</span></span>; <span class="comment">// 按引用传递</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t4</span><span class="params">(<span class="built_in">std</span>::move(t3))</span></span>; <span class="comment">// t4 现在运行 f2() 。 t3 不再是线程</span></span><br><span class="line">    t2.join();</span><br><span class="line">    t4.join();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Final value of n is "</span> &lt;&lt; n &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Thread 1 executing</span><br><span class="line">Thread 2 executing</span><br><span class="line">Thread 1 executing</span><br><span class="line">Thread 2 executing</span><br><span class="line">Thread 1 executing</span><br><span class="line">Thread 2 executing</span><br><span class="line">Thread 1 executing</span><br><span class="line">Thread 2 executing</span><br><span class="line">Thread 2 executing</span><br><span class="line">Thread 1 executing</span><br><span class="line">Final value of n is 5</span><br></pre></td></tr></table></figure>
+<h4 id="析构函数-thread"><a href="#析构函数-thread" class="headerlink" title="析构函数~thread();"></a>析构函数~thread();</h4><p>销毁 thread 对象。</p>
+<p>若 *this 拥有关联线程（ joinable() == true ），则调用 std::terminate() 。</p>
+<p><strong>注意</strong><br>在下列操作后 thread 对象无关联的线程（从而可安全销毁）</p>
+<ul>
+<li>被默认构造</li>
+<li>被移动</li>
+<li>已调用 join()</li>
+<li>已调用 detach()</li>
+</ul>
+<h4 id="std-thread-operator"><a href="#std-thread-operator" class="headerlink" title="std::thread::operator="></a>std::thread::operator=</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">thread&amp; <span class="keyword">operator</span>=( thread&amp;&amp; other ) <span class="keyword">noexcept</span>;</span><br></pre></td></tr></table></figure>
+<p>若 <code>*this</code> 仍拥有关联的运行中进程（即 <code>joinable() == true</code> ），则调用 <code>std::terminate()</code> 。否则，赋值 other 的状态给 <code>*thi</code>s 并设置 other 为默认构造的状态。</p>
+<p>此调用后， this-&gt;get_id() 等于 other.get_id() 在调用前的值，而 other 不在表示执行的线程。</p>
+<h3 id="观察器"><a href="#观察器" class="headerlink" title="观察器"></a>观察器</h3><h4 id="joinable"><a href="#joinable" class="headerlink" title="joinable"></a>joinable</h4><p>检查线程是否可合并，即潜在地运行于平行环境中 (公开成员函数)</p>
+<p>检查 thread 对象是否标识活跃的执行线程。具体是返回 <code>true</code> <code>if get_id() != std::thread::id</code> 。故默认构造的 thread 不可合并。</p>
+<p>完成执行代码，但未被合并的线程仍被认为是活跃线程，从而可合并。</p>
+<p><strong>示例</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::thread t;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"before starting, joinable: "</span> &lt;&lt; <span class="built_in">std</span>::boolalpha &lt;&lt; t.joinable()</span><br><span class="line">              &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"> </span><br><span class="line">    t = <span class="built_in">std</span>::thread(foo);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"after starting, joinable: "</span> &lt;&lt; t.joinable() </span><br><span class="line">              &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"> </span><br><span class="line">    t.join();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"after joining, joinable: "</span> &lt;&lt; t.joinable() </span><br><span class="line">              &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">before starting, joinable: false</span><br><span class="line">after starting, joinable: true</span><br><span class="line">after joining, joinable: false</span><br></pre></td></tr></table></figure>
+<h4 id="get-id"><a href="#get-id" class="headerlink" title="get_id"></a>get_id</h4><p>返回线程的 id (公开成员函数)</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::thread::<span class="function">id <span class="title">get_id</span><span class="params">()</span> <span class="keyword">const</span> <span class="keyword">noexcept</span></span>;</span><br></pre></td></tr></table></figure>
+<p>返回标识与 <code>*this</code> 关联的线程的<code>std::thread::id</code>类型值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(foo)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::thread::id t1_id = t1.get_id();</span><br><span class="line"> </span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t2</span><span class="params">(foo)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::thread::id t2_id = t2.get_id();</span><br><span class="line"> </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"t1's id: "</span> &lt;&lt; t1_id &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"t2's id: "</span> &lt;&lt; t2_id &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"> </span><br><span class="line">    t1.join();</span><br><span class="line">    t2.join();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">t1&apos;s id: 0x35a7210f</span><br><span class="line">t2&apos;s id: 0x35a311c4</span><br></pre></td></tr></table></figure>
+<h4 id="native-handle"><a href="#native-handle" class="headerlink" title="native_handle"></a>native_handle</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">native_handle_type <span class="title">native_handle</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<p>返回底层实现定义的线程句柄 (公开成员函数)</p>
+<p><strong>示例</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="built_in">std</span>::mutex iomutex;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line"> </span><br><span class="line">    sched_param sch;</span><br><span class="line">    <span class="keyword">int</span> policy; </span><br><span class="line">    pthread_getschedparam(pthread_self(), &amp;policy, &amp;sch);</span><br><span class="line">    <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lk(iomutex);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Thread "</span> &lt;&lt; num &lt;&lt; <span class="string">" is executing at priority "</span></span><br><span class="line">              &lt;&lt; sch.sched_priority &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::thread t1(f, 1), t2(f, 2);</span><br><span class="line"> </span><br><span class="line">    sched_param sch;</span><br><span class="line">    <span class="keyword">int</span> policy; </span><br><span class="line">    pthread_getschedparam(t1.native_handle(), &amp;policy, &amp;sch);</span><br><span class="line">    sch.sched_priority = <span class="number">20</span>;</span><br><span class="line">    <span class="keyword">if</span> (pthread_setschedparam(t1.native_handle(), SCHED_FIFO, &amp;sch)) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to setschedparam: "</span> &lt;&lt; <span class="built_in">std</span>::strerror(errno) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    t1.join(); t2.join();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Thread 2 is executing at priority 0</span><br><span class="line">Thread 1 is executing at priority 20</span><br></pre></td></tr></table></figure>
+<h4 id="hardware-concurrency"><a href="#hardware-concurrency" class="headerlink" title="hardware_concurrency"></a>hardware_concurrency</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">hardware_concurrency</span><span class="params">()</span> <span class="keyword">noexcept</span></span>;</span><br></pre></td></tr></table></figure>
+<p>返回实现所支持的并发线程数。应该只把值当做提示。(静态)</p>
+<p><strong>示例</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> n = <span class="built_in">std</span>::thread::hardware_concurrency();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; n &lt;&lt; <span class="string">" concurrent threads are supported.\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">4 concurrent threads are supported.</span><br></pre></td></tr></table></figure>
+<h3 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h3><h4 id="join"><a href="#join" class="headerlink" title="join"></a>join</h4><p>阻塞当前线程，直至<code>*this</code>所标识的线程完成其执行。<code>*this</code> 所标识的线程的完成<em>同步于</em>从 <code>join()</code>的成功返回。</p>
+<p><strong>错误条件</strong></p>
+<ul>
+<li>若 this-&gt;get_id() == std::this_thread::get_id() （检测到死锁）则为 resource_deadlock_would_occur</li>
+<li>若线程非法则为 no_such_process</li>
+<li>若 joinable 为 false 则为 invalid_argument</li>
+</ul>
+<p><strong>示例</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 模拟昂贵操作</span></span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bar</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 模拟昂贵操作</span></span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"starting first helper...\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">helper1</span><span class="params">(foo)</span></span>;</span><br><span class="line"> </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"starting second helper...\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">helper2</span><span class="params">(bar)</span></span>;</span><br><span class="line"> </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"waiting for helpers to finish..."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    helper1.join();</span><br><span class="line">    helper2.join();</span><br><span class="line"> </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"done!\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">starting first helper...</span><br><span class="line">starting second helper...</span><br><span class="line">waiting for helpers to finish...</span><br><span class="line">done!</span><br></pre></td></tr></table></figure>
+<h4 id="detach"><a href="#detach" class="headerlink" title="detach"></a>detach</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">detach</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<p>从 thread 对象分离执行的线程，允许执行独立地持续。一旦线程退出，则释放所有分配的资源。</p>
+<p>调用 <code>detach</code> 后， <code>*this</code> 不再占有任何线程。</p>
+<p><strong>注意</strong></p>
+<p>若 <code>joinable() == false</code> 或错误发生时为 <a href="https://zh.cppreference.com/w/cpp/error/system_error" target="_blank" rel="noopener">std::system_error</a> 。</p>
+<p><strong>示例</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">independentThread</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Starting concurrent thread.\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">2</span>));</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Exiting concurrent thread.\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">threadCaller</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Starting thread caller.\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t</span><span class="params">(independentThread)</span></span>;</span><br><span class="line">    t.detach();</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Exiting thread caller.\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    threadCaller();</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">5</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Starting thread caller.</span><br><span class="line">Starting concurrent thread.</span><br><span class="line">Exiting thread caller.</span><br><span class="line">Exiting concurrent thread.</span><br></pre></td></tr></table></figure>
+<h4 id="swap"><a href="#swap" class="headerlink" title="swap"></a>swap</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">( thread&amp; other )</span> <span class="keyword">noexcept</span></span>;</span><br></pre></td></tr></table></figure>
+<p>互换二个 thread 对象的底层句柄。</p>
+<h3 id="其他头文件中的函数"><a href="#其他头文件中的函数" class="headerlink" title="其他头文件中的函数"></a>其他头文件中的函数</h3><h4 id="std-swap-std-thread"><a href="#std-swap-std-thread" class="headerlink" title="std::swap(std::thread)"></a>std::swap(std::thread)</h4><p>void swap( thread &amp;lhs, thread &amp;rhs ) noexcept; 特化std::swap算法。交换 <code>lhs</code> 与 <code>rhs</code> 的状态。等效地调用 lhs.swap(rhs) 。</p>
+<h4 id="比较两个thread-id对象"><a href="#比较两个thread-id对象" class="headerlink" title="比较两个thread::id对象"></a><strong>比较两个thread::id对象</strong></h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> <span class="keyword">operator</span>==( thread::id lhs, thread::id rhs ) <span class="keyword">noexcept</span>;</span><br><span class="line"><span class="keyword">bool</span> <span class="keyword">operator</span>!=( thread::id lhs, thread::id rhs ) <span class="keyword">noexcept</span>;</span><br><span class="line"><span class="keyword">bool</span> <span class="keyword">operator</span>&lt;( thread::id lhs, thread::id rhs ) <span class="keyword">noexcept</span>;</span><br><span class="line"><span class="keyword">bool</span> <span class="keyword">operator</span>&lt;=( thread::id lhs, thread::id rhs ) <span class="keyword">noexcept</span>;</span><br><span class="line"><span class="keyword">bool</span> <span class="keyword">operator</span>&gt;( thread::id lhs, thread::id rhs ) <span class="keyword">noexcept</span>;</span><br><span class="line"><span class="keyword">bool</span> <span class="keyword">operator</span>&gt;=( thread::id lhs, thread::id rhs ) <span class="keyword">noexcept</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="std-hash-std-thread-id"><a href="#std-hash-std-thread-id" class="headerlink" title="std::hash\std::thread::id\"></a><strong>std::hash\<a href="std::thread::id\" target="_blank" rel="noopener">std::thread::id\</a></strong></h4><p>std::hash 对 std::thread::id 类的模板特化允许用户获得线程标识符的哈希。</p>
+<p>定义于命名空间 std::this_thread</p>
+<h4 id="yield"><a href="#yield" class="headerlink" title="yield"></a><strong>yield</strong></h4><p>提供提示给实现，以重调度线程的执行，允许其他线程运行。</p>
+<p>此函数的准确性为依赖于实现，特别是使用中的 OS 调度器机制和系统状态。例如，先进先出实时调度器（ Linux 的 SCHED_FIFO ）将悬挂当前线程并将它放到准备运行的同优先级线程的队列尾（而若无其他线程在同优先级，则 yield 无效果）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 建议其他线程运行一小段时间的“忙睡眠”</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">little_sleep</span><span class="params">(<span class="built_in">std</span>::chrono::microseconds us)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> start = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="keyword">auto</span> end = start + us;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="built_in">std</span>::this_thread::yield();</span><br><span class="line">    &#125; <span class="keyword">while</span> (<span class="built_in">std</span>::chrono::high_resolution_clock::now() &lt; end);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> start = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line"> </span><br><span class="line">    little_sleep(<span class="built_in">std</span>::chrono::microseconds(<span class="number">100</span>));</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">auto</span> elapsed = <span class="built_in">std</span>::chrono::high_resolution_clock::now() - start;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"waited for "</span></span><br><span class="line">              &lt;&lt; <span class="built_in">std</span>::chrono::duration_cast&lt;<span class="built_in">std</span>::chrono::microseconds&gt;(elapsed).count()</span><br><span class="line">              &lt;&lt; <span class="string">" microseconds\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输出：waited for 128 microseconds</span></span><br></pre></td></tr></table></figure>
+<h4 id="sleep-for"><a href="#sleep-for" class="headerlink" title="sleep_for"></a><strong>sleep_for</strong></h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt; <span class="class"><span class="keyword">class</span> <span class="title">Rep</span>, <span class="title">class</span> <span class="title">Period</span> &gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">sleep_for</span>( <span class="title">const</span> <span class="title">std</span>:</span>:chrono::duration&lt;Rep, Period&gt;&amp; sleep_duration );</span><br></pre></td></tr></table></figure>
+<p> 使线程休眠一段时间，阻塞当前线程执行，<em>至少</em>经过指定的 <code>sleep_duration</code> 。此函数可能阻塞长于 <code>sleep_duration</code> ，因为调度或资源争议延迟。标准库建议用稳定时钟度量时长。若实现用系统时间代替，则等待时间亦可能对时钟调节敏感。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::chrono_literals; <span class="comment">// C++14</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Hello waiter"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>; <span class="comment">// 有意冲入</span></span><br><span class="line">    <span class="keyword">auto</span> start = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="number">2</span>s);</span><br><span class="line">    <span class="keyword">auto</span> end = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = end-start;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Waited "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">输出</span></span><br><span class="line"><span class="comment">Hello waiter</span></span><br><span class="line"><span class="comment">Waited 2000.12 ms</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<h4 id="sleep-until"><a href="#sleep-until" class="headerlink" title="sleep_until"></a><strong>sleep_until</strong></h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt; <span class="class"><span class="keyword">class</span> <span class="title">Clock</span>, <span class="title">class</span> <span class="title">Duration</span> &gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">sleep_until</span>( <span class="title">const</span> <span class="title">std</span>:</span>:chrono::time_point&lt;Clock,Duration&gt;&amp; sleep_time );</span><br></pre></td></tr></table></figure>
+<p>暂停当前线程的执行直到特定的时间点，阻塞当前线程，直至抵达指定的 <code>sleep_time</code> 。使用联倾向于 <code>sleep_time</code> 的时钟，这表示时钟调节有影响。从而在调用时间点后，阻塞的时长可能小于，但不会多于 sleep_time - Clock::now() 。函数亦可能阻塞长于抵达 <code>sleep_time</code> 之后，由于调度或资源争议延迟。</p>
+<h1 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h1><p><strong>this_thread</strong>    提供访问当前执行线程的函数</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="built_in">std</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">thread</span>;</span></span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">(thread&amp; x, thread&amp; y)</span> <span class="keyword">noexcept</span></span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">bool</span> <span class="keyword">operator</span>==(thread::id x, thread::id y) <span class="keyword">noexcept</span>;</span><br><span class="line">    <span class="keyword">bool</span> <span class="keyword">operator</span>!=(thread::id x, thread::id y) <span class="keyword">noexcept</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">bool</span> <span class="keyword">operator</span>&lt;(thread::id x, thread::id y) <span class="keyword">noexcept</span>;</span><br><span class="line">    <span class="keyword">bool</span> <span class="keyword">operator</span>&lt;=(thread::id x, thread::id y) <span class="keyword">noexcept</span>;</span><br><span class="line">    <span class="keyword">bool</span> <span class="keyword">operator</span>&gt;(thread::id x, thread::id y) <span class="keyword">noexcept</span>;</span><br><span class="line">    <span class="keyword">bool</span> <span class="keyword">operator</span>&gt;=(thread::id x, thread::id y) <span class="keyword">noexcept</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">CharT</span>, <span class="title">class</span> <span class="title">Traits</span>&gt;</span></span><br><span class="line"><span class="class">    <span class="title">basic_ostream</span>&lt;CharT, Traits&gt;&amp; <span class="title">operator</span>&lt;&lt;(basic_ostream&lt;CharT, Traits&gt;&amp; out,</span></span><br><span class="line"><span class="class">                                            thread::id id);</span></span><br><span class="line"><span class="class"> </span></span><br><span class="line"><span class="class">    template &lt;class T&gt; struct hash;</span></span><br><span class="line"><span class="class">    template &lt;&gt; struct hash&lt;thread::id&gt;;</span></span><br><span class="line"><span class="class"> </span></span><br><span class="line"><span class="class">    namespace this_thread &#123;</span></span><br><span class="line"><span class="class"> </span></span><br><span class="line"><span class="class">        thread::id get_id() noexcept;</span></span><br><span class="line"><span class="class">        void yield() noexcept;</span></span><br><span class="line"><span class="class">        template &lt;class Clock, class Duration&gt;</span></span><br><span class="line"><span class="class">            void sleep_until(const chrono::time_point&lt;Clock, Duration&gt;&amp; abs_time);</span></span><br><span class="line"><span class="class">        template &lt;class Rep, class Period&gt;</span></span><br><span class="line"><span class="class">            void sleep_for(const chrono::duration&lt;Rep, Period&gt;&amp; rel_time);</span></span><br><span class="line"><span class="class"> </span></span><br><span class="line"><span class="class">    &#125;</span></span><br><span class="line"><span class="class">&#125;</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/面试/" rel="tag"># 面试</a>
+          
+            <a href="/tags/c-cpp/" rel="tag"># c&cpp</a>
+          
+            <a href="/tags/多线程/" rel="tag"># 多线程</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/20/volatile是做什么的/" rel="next" title="volatile是做什么的">
+                <i class="fa fa-chevron-left"></i> volatile是做什么的
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div class="ds-thread" data-thread-key="2019/04/20/01线程thread/" data-title="01线程thread" data-url="i2357.xyz/2019/04/20/01线程thread/">
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ihei</p>
+              <p class="site-description motion-element" itemprop="description">加油加油，认真度过研究生生活--</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#类：thread"><span class="nav-number">1.</span> <span class="nav-text">类：thread</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#函数"><span class="nav-number">2.</span> <span class="nav-text">函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#成员函数"><span class="nav-number">2.0.1.</span> <span class="nav-text">成员函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#构造函数"><span class="nav-number">2.0.1.1.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#析构函数-thread"><span class="nav-number">2.0.1.2.</span> <span class="nav-text">析构函数~thread();</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#std-thread-operator"><span class="nav-number">2.0.1.3.</span> <span class="nav-text">std::thread::operator=</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#观察器"><span class="nav-number">2.0.2.</span> <span class="nav-text">观察器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#joinable"><span class="nav-number">2.0.2.1.</span> <span class="nav-text">joinable</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#get-id"><span class="nav-number">2.0.2.2.</span> <span class="nav-text">get_id</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#native-handle"><span class="nav-number">2.0.2.3.</span> <span class="nav-text">native_handle</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#hardware-concurrency"><span class="nav-number">2.0.2.4.</span> <span class="nav-text">hardware_concurrency</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#操作"><span class="nav-number">2.0.3.</span> <span class="nav-text">操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#join"><span class="nav-number">2.0.3.1.</span> <span class="nav-text">join</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#detach"><span class="nav-number">2.0.3.2.</span> <span class="nav-text">detach</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#swap"><span class="nav-number">2.0.3.3.</span> <span class="nav-text">swap</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他头文件中的函数"><span class="nav-number">2.0.4.</span> <span class="nav-text">其他头文件中的函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#std-swap-std-thread"><span class="nav-number">2.0.4.1.</span> <span class="nav-text">std::swap(std::thread)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#比较两个thread-id对象"><span class="nav-number">2.0.4.2.</span> <span class="nav-text">比较两个thread::id对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#std-hash-std-thread-id"><span class="nav-number">2.0.4.3.</span> <span class="nav-text">std::hash\std::thread::id\</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#yield"><span class="nav-number">2.0.4.4.</span> <span class="nav-text">yield</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sleep-for"><span class="nav-number">2.0.4.5.</span> <span class="nav-text">sleep_for</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sleep-until"><span class="nav-number">2.0.4.6.</span> <span class="nav-text">sleep_until</span></a></li></ol></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#命名空间"><span class="nav-number">3.</span> <span class="nav-text">命名空间</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ihei</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ihei"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
